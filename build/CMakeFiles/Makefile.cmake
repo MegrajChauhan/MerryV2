@@ -12,6 +12,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.28.2/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.28.2/CMakeSystem.cmake"
   "/home/aryanchauhan/Desktop/Coding/Merry2/merry/CMakeLists.txt"
+  "/home/aryanchauhan/Desktop/Coding/Merry2/merry/abs/CMakeLists.txt"
   "/usr/share/cmake/Modules/CMakeCInformation.cmake"
   "/usr/share/cmake/Modules/CMakeCXXInformation.cmake"
   "/usr/share/cmake/Modules/CMakeCommonLanguageInclude.cmake"
@@ -42,10 +43,12 @@ set(CMAKE_MAKEFILE_OUTPUTS
 set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   "merry/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "merry/abs/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/mvm.dir/DependInfo.cmake"
   "merry/CMakeFiles/mstack.dir/DependInfo.cmake"
+  "merry/abs/CMakeFiles/mthread.dir/DependInfo.cmake"
   )

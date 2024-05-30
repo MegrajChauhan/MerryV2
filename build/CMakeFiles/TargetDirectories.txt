@@ -4,3 +4,6 @@
 /home/aryanchauhan/Desktop/Coding/Merry2/build/merry/CMakeFiles/mstack.dir
 /home/aryanchauhan/Desktop/Coding/Merry2/build/merry/CMakeFiles/edit_cache.dir
 /home/aryanchauhan/Desktop/Coding/Merry2/build/merry/CMakeFiles/rebuild_cache.dir
+/home/aryanchauhan/Desktop/Coding/Merry2/build/merry/abs/CMakeFiles/mthread.dir
+/home/aryanchauhan/Desktop/Coding/Merry2/build/merry/abs/CMakeFiles/edit_cache.dir
+/home/aryanchauhan/Desktop/Coding/Merry2/build/merry/abs/CMakeFiles/rebuild_cache.dir

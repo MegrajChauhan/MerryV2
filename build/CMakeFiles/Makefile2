@@ -81,29 +81,47 @@ clean: merry/clean
 
 # Recursive "all" directory target.
 merry/all: merry/CMakeFiles/mstack.dir/all
+merry/all: merry/abs/all
 .PHONY : merry/all
 
 # Recursive "preinstall" directory target.
-merry/preinstall:
+merry/preinstall: merry/abs/preinstall
 .PHONY : merry/preinstall
 
 # Recursive "clean" directory target.
 merry/clean: merry/CMakeFiles/mstack.dir/clean
+merry/clean: merry/abs/clean
 .PHONY : merry/clean
+
+#=============================================================================
+# Directory level rules for directory merry/abs
+
+# Recursive "all" directory target.
+merry/abs/all: merry/abs/CMakeFiles/mthread.dir/all
+.PHONY : merry/abs/all
+
+# Recursive "preinstall" directory target.
+merry/abs/preinstall:
+.PHONY : merry/abs/preinstall
+
+# Recursive "clean" directory target.
+merry/abs/clean: merry/abs/CMakeFiles/mthread.dir/clean
+.PHONY : merry/abs/clean
 
 #=============================================================================
 # Target rules for target CMakeFiles/mvm.dir
 
 # All Build rule for target.
 CMakeFiles/mvm.dir/all: merry/CMakeFiles/mstack.dir/all
+CMakeFiles/mvm.dir/all: merry/abs/CMakeFiles/mthread.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mvm.dir/build.make CMakeFiles/mvm.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mvm.dir/build.make CMakeFiles/mvm.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/aryanchauhan/Desktop/Coding/Merry2/build/CMakeFiles --progress-num=3,4 "Built target mvm"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/aryanchauhan/Desktop/Coding/Merry2/build/CMakeFiles --progress-num=5,6 "Built target mvm"
 .PHONY : CMakeFiles/mvm.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/mvm.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/aryanchauhan/Desktop/Coding/Merry2/build/CMakeFiles 4
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/aryanchauhan/Desktop/Coding/Merry2/build/CMakeFiles 6
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/mvm.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/aryanchauhan/Desktop/Coding/Merry2/build/CMakeFiles 0
 .PHONY : CMakeFiles/mvm.dir/rule
@@ -142,6 +160,32 @@ mstack: merry/CMakeFiles/mstack.dir/rule
 merry/CMakeFiles/mstack.dir/clean:
 	$(MAKE) $(MAKESILENT) -f merry/CMakeFiles/mstack.dir/build.make merry/CMakeFiles/mstack.dir/clean
 .PHONY : merry/CMakeFiles/mstack.dir/clean
+
+#=============================================================================
+# Target rules for target merry/abs/CMakeFiles/mthread.dir
+
+# All Build rule for target.
+merry/abs/CMakeFiles/mthread.dir/all:
+	$(MAKE) $(MAKESILENT) -f merry/abs/CMakeFiles/mthread.dir/build.make merry/abs/CMakeFiles/mthread.dir/depend
+	$(MAKE) $(MAKESILENT) -f merry/abs/CMakeFiles/mthread.dir/build.make merry/abs/CMakeFiles/mthread.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/aryanchauhan/Desktop/Coding/Merry2/build/CMakeFiles --progress-num=3,4 "Built target mthread"
+.PHONY : merry/abs/CMakeFiles/mthread.dir/all
+
+# Build rule for subdir invocation for target.
+merry/abs/CMakeFiles/mthread.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/aryanchauhan/Desktop/Coding/Merry2/build/CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 merry/abs/CMakeFiles/mthread.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/aryanchauhan/Desktop/Coding/Merry2/build/CMakeFiles 0
+.PHONY : merry/abs/CMakeFiles/mthread.dir/rule
+
+# Convenience name for target.
+mthread: merry/abs/CMakeFiles/mthread.dir/rule
+.PHONY : mthread
+
+# clean rule for target.
+merry/abs/CMakeFiles/mthread.dir/clean:
+	$(MAKE) $(MAKESILENT) -f merry/abs/CMakeFiles/mthread.dir/build.make merry/abs/CMakeFiles/mthread.dir/clean
+.PHONY : merry/abs/CMakeFiles/mthread.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

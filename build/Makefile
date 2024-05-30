@@ -142,6 +142,19 @@ mstack/fast:
 	$(MAKE) $(MAKESILENT) -f merry/CMakeFiles/mstack.dir/build.make merry/CMakeFiles/mstack.dir/build
 .PHONY : mstack/fast
 
+#=============================================================================
+# Target rules for targets named mthread
+
+# Build rule for target.
+mthread: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 mthread
+.PHONY : mthread
+
+# fast build rule for target.
+mthread/fast:
+	$(MAKE) $(MAKESILENT) -f merry/abs/CMakeFiles/mthread.dir/build.make merry/abs/CMakeFiles/mthread.dir/build
+.PHONY : mthread/fast
+
 main.o: main.c.o
 .PHONY : main.o
 
@@ -175,6 +188,7 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... mstack"
+	@echo "... mthread"
 	@echo "... mvm"
 	@echo "... main.o"
 	@echo "... main.i"

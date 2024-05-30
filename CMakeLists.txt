@@ -26,13 +26,13 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${OutputDir}/${CMAKE_BUILD_TYPE}/libs)
 # Check for platform and set platform-specific include directories
 if(WIN32)
     set(PlatFormIncludeDirs
-        abs/hard/win
-        abs/os/win
+        merry/abs/hard/win
+        merry/abs/os/win
     )
-elseif(UNIX AND NOT APPLE)
+elseif(LINUX)
     set(PlatFormIncludeDirs
-        abs/hard/linux
-        abs/os/linux
+        merry/abs/hard/linux
+        merry/abs/os/linux
     )
 endif()
 
@@ -68,7 +68,9 @@ set(LIBS_NAME
 # Add subdirectories
 add_subdirectory(merry)
 
+message("${ADDITIONAL_FILESA}")
+
 # Add executable
 add_executable(${PROJECT_NAME} main.c)
-target_link_libraries(${PROJECT_NAME} ${LIBS_NAME} ${ADDITIONAL_FILESM})
+target_link_libraries(${PROJECT_NAME} ${LIBS_NAME} ${ADDITIONAL_FILESM} ${ADDITIONAL_FILESA})
 

@@ -50,7 +50,7 @@
 #define _MERRY_ALWAYS_INLINE_ static inline
 #endif
 
-#define _MERRY_NO_DISCARD_ [[nodiscard]]
+#define _MERRY_NO_DISCARD_ __attribute__((nodiscard))
 #define _MERRY_NO_THROW_ __attribute__((no_throw))
 #define _MERRY_NO_RETURN_ __attribute__((no_return))
 #define _MERRY_NO_NULL_ __attribute__((nonnull))
