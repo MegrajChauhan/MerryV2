@@ -6,11 +6,6 @@ msize_t merry_get_errno()
     merrno = 0;
     return ret;
 }
-#include <errno.h>
-#include "merry_errno.h"
-
-// Global variable to hold the custom error code
-int merrno = 0;
 
 void merry_update_errno()
 {

@@ -68,8 +68,6 @@ set(LIBS_NAME
 # Add subdirectories
 add_subdirectory(merry)
 
-message("${ADDITIONAL_FILESA}")
-
 # Add executable
 add_executable(${PROJECT_NAME} main.c)
 target_link_libraries(${PROJECT_NAME} ${LIBS_NAME} ${ADDITIONAL_FILESM} ${ADDITIONAL_FILESA})

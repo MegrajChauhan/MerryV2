@@ -6,11 +6,13 @@ add_subdirectory(abs)
 set(LIBS_TO_ADDM
     merry_errno.c
     merry_stack.c
+    merry_request_queue.c
 )
 
 set(LIBS_NAMEM
     merrno
     mstack
+    mreqqueue
 )
 
 list(LENGTH LIBS_TO_ADDM LIBS_TO_ADDM_LENGTH)

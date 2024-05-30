@@ -1,1 +1,0 @@
-/usr/bin/cc -O3 -DNDEBUG CMakeFiles/mvm.dir/main.c.o -o release/mvm  release/libs/libmstack.a release/libs/libmthread.a 

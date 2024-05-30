@@ -1,2 +1,0 @@
-/usr/bin/ar qc ../release/libs/libmstack.a CMakeFiles/mstack.dir/merry_stack.c.o
-/usr/bin/ranlib ../release/libs/libmstack.a
