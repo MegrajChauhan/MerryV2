@@ -10,6 +10,7 @@ set(LIBS_TO_ADDM
     merry_request_hdlr.c
     merry_membase.c
     merry_dmem.c
+    merry_imem.c
 )
 
 set(LIBS_NAMEM
@@ -19,6 +20,7 @@ set(LIBS_NAMEM
     mreqhdlr
     mmembase
     mdmem
+    mimem
 )
 
 list(LENGTH LIBS_TO_ADDM LIBS_TO_ADDM_LENGTH)
