@@ -7,12 +7,18 @@ set(LIBS_TO_ADDM
     merry_errno.c
     merry_stack.c
     merry_request_queue.c
+    merry_request_hdlr.c
+    merry_membase.c
+    merry_dmem.c
 )
 
 set(LIBS_NAMEM
     merrno
     mstack
     mreqqueue
+    mreqhdlr
+    mmembase
+    mdmem
 )
 
 list(LENGTH LIBS_TO_ADDM LIBS_TO_ADDM_LENGTH)
