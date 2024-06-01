@@ -3,10 +3,14 @@ cmake_minimum_required(VERSION 3.28.2)
 # The libraries to add from here
 set(LIBS_TO_ADDA
     merry_thread.c
+    merry_time.c
+    merry_process.c
 )
 
 set(LIBS_NAMEA
     mthread
+    mtime
+    mprocess
 )
 
 list(LENGTH LIBS_TO_ADDA LIBS_TO_ADDA_LENGTH)
