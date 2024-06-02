@@ -2,6 +2,8 @@
 #define _MERRY_TIME_
 
 #include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
 #include <merry_types.h>
 #include <merry_utils.h>
 
@@ -9,8 +11,8 @@ typedef struct MerryTime MerryTime;
 
 struct MerryTime
 {
-    msize_t seconds;
-    msize_t microseconds;
+    int seconds;
+    int microseconds;
 };
 
 #define _MERRY_SYS_TICKS_PER_SECONDS_ CLOCKS_PER_SEC

@@ -5,6 +5,7 @@
 #include <merry_console.h>
 #include <merry_dmem.h>
 #include <merry_imem.h>
+#include <merry_time.h>
 
 mret_t test_dmem()
 {
@@ -99,6 +100,8 @@ mret_t test_stack()
 
 int main()
 {
+    MerryTime t;
+    merry_get_time(&t);
     if (test_stack() != RET_SUCCESS)
     {
         printf("Stack Test Failed\n");
@@ -117,5 +120,8 @@ int main()
         return 1;
     }
     printf("Instruction Memory Test Passed\n");
+    merry_sleep(1);
+    t = merry_get_time_difference_from(&t);
+    printf("Time taken: %d and %d\n", t.seconds, t.microseconds);
     return 0;
 }

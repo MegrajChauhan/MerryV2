@@ -1,7 +1,7 @@
 #ifndef _MERRY_MEMBASE_
 #define _MERRY_MEMBASE_
 
-// #include <merry_mem.h>
+#include <merry_mem.h>
 #include <merry_types.h>
 #include <stdlib.h>
 
@@ -30,29 +30,12 @@
         .page = addr / _MERRY_MEMORY_ADDRESSES_PER_PAGE_, .offset = address % _MERRY_MEMORY_ADDRESSES_PER_PAGE_ \
     }
 
-typedef struct MerryMemPage MerryMemPage;
 typedef struct MerryAddress MerryAddress;
-
-struct MerryMemPage
-{
-    union
-    {
-        mbyte_t byte[_MERRY_MEMORY_ADDRESSES_PER_PAGE_];
-        mqword_t qword[_MERRY_MEMORY_ADDRESSES_PER_PAGE_ / 8];
-    } page;
-    mbool_t is_full; // is the page full?
-    msize_t offset;  // if not full, what is the current offset[Index]?
-    // add more flags as necessary
-};
 
 struct MerryAddress
 {
     msize_t page;
     msize_t offset;
 };
-
-MerryMemPage *merry_get_new_page();
-
-void merry_destroy_page(MerryMemPage *page);
 
 #endif

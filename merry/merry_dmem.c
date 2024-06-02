@@ -1,48 +1,14 @@
 #include "merry_dmem.h"
 
-MerryDMem *merry_data_mem_init(msize_t page_count)
+mret_t merry_data_mem_init(MerryDMem *dmem, msize_t page_count, mptr_t *ptr)
 {
-    MerryDMem *dmem = (MerryDMem *)malloc(sizeof(MerryDMem));
-    if (dmem == NULL)
-        return NULL;
-    dmem->pages = (MerryMemPage *)malloc(sizeof(MerryMemPage) * page_count);
-    for (msize_t i = 0; i < page_count; i++)
-    {
-        dmem->pages[i].is_full = mfalse;
-        dmem->pages[i].offset = 0;
-    }
+    dmem->pages = (mbptr_t)ptr;
     dmem->page_count = page_count;
-    return dmem;
-}
-
-void merry_destroy_data_mem(MerryDMem *mem)
-{
-    if (mem == NULL)
-        return;
-    free(mem->pages);
-    free(mem);
-}
-
-MerryDMem *merry_data_mem_init_provided(MerryMemPage *pages, msize_t count)
-{
-    MerryDMem *dmem = (MerryDMem *)malloc(sizeof(MerryDMem));
-    if (dmem == NULL)
-        return NULL;
-    dmem->pages = pages;
-    dmem->page_count = count;
-    return dmem;
+    return RET_SUCCESS;
 }
 
 mret_t merry_dmemory_add_new_page(MerryDMem *memory)
 {
-    MerryMemPage *temp = memory->pages;
-    if ((memory->pages = (MerryMemPage *)realloc(memory->pages, sizeof(MerryMemPage) * (memory->page_count + 1))) == NULL)
-    {
-        memory->pages = temp; // restore on fail
-        return RET_FAILURE;
-    }
-    memory->pages[memory->page_count].is_full = mfalse;
-    memory->pages[memory->page_count].offset = 0;
     memory->page_count++;
     return RET_SUCCESS;
 }
@@ -57,7 +23,7 @@ mret_t merry_dmemory_read_byte(MerryDMem *memory, maddress_t address, mqptr_t _s
         memory->error = MERRY_MEM_INVALID_ACCESS;
         return RET_FAILURE;
     }
-    *_store_in = memory->pages[addr.page].page.byte[addr.offset];
+    *_store_in = memory->pages[addr.page][addr.offset];
     return RET_SUCCESS;
 }
 
@@ -71,7 +37,7 @@ mret_t merry_dmemory_read_byte_atm(MerryDMem *memory, maddress_t address, mqptr_
         memory->error = MERRY_MEM_INVALID_ACCESS;
         return RET_FAILURE;
     }
-    *_store_in = atomic_load(&memory->pages[addr.page].page.byte[addr.offset]);
+    *_store_in = atomic_load(&memory->pages[addr.page][addr.offset]);
     return RET_SUCCESS;
 }
 
@@ -85,7 +51,7 @@ mret_t merry_dmemory_write_byte(MerryDMem *memory, maddress_t address, mqword_t 
         memory->error = MERRY_MEM_INVALID_ACCESS;
         return RET_FAILURE;
     }
-    memory->pages[addr.page].page.byte[addr.offset] = _to_write;
+    memory->pages[addr.page][addr.offset] = _to_write;
     return RET_SUCCESS;
 }
 
@@ -99,7 +65,7 @@ mret_t merry_dmemory_write_byte_atm(MerryDMem *memory, maddress_t address, mqwor
         memory->error = MERRY_MEM_INVALID_ACCESS;
         return RET_FAILURE;
     }
-    atomic_store(&memory->pages[addr.page].page.byte[addr.offset], _to_write & 0xFF);
+    atomic_store(&memory->pages[addr.page][addr.offset], _to_write & 0xFF);
     return RET_SUCCESS;
 }
 
@@ -120,7 +86,7 @@ mret_t merry_dmemory_read_word(MerryDMem *memory, maddress_t address, mqptr_t _s
         memory->error = MERRY_MEM_INVALID_ACCESS;
         return RET_FAILURE;
     }
-    *_store_in = *((mwptr_t)(memory->pages[addr.page].page.byte + addr.offset));
+    *_store_in = *((mwptr_t)(memory->pages[addr.page] + addr.offset));
     return RET_SUCCESS;
 }
 
@@ -141,7 +107,7 @@ mret_t merry_dmemory_read_word_atm(MerryDMem *memory, maddress_t address, mqptr_
         memory->error = MERRY_MEM_INVALID_ACCESS;
         return RET_FAILURE;
     }
-    *_store_in = (mqword_t)atomic_load(((mwptr_t)(memory->pages[addr.page].page.byte + addr.offset)));
+    *_store_in = (mqword_t)atomic_load(((mwptr_t)(memory->pages[addr.page] + addr.offset)));
     return RET_SUCCESS;
 }
 
@@ -161,7 +127,7 @@ mret_t merry_dmemory_write_word(MerryDMem *memory, maddress_t address, mqword_t 
         memory->error = MERRY_MEM_INVALID_ACCESS;
         return RET_FAILURE;
     }
-    *((mwptr_t)(memory->pages[addr.page].page.byte + addr.offset)) = _to_write & 0xFFFF;
+    *((mwptr_t)(memory->pages[addr.page] + addr.offset)) = _to_write & 0xFFFF;
     return RET_SUCCESS;
 }
 
@@ -181,7 +147,7 @@ mret_t merry_dmemory_write_word_atm(MerryDMem *memory, maddress_t address, mqwor
         memory->error = MERRY_MEM_INVALID_ACCESS;
         return RET_FAILURE;
     }
-    atomic_store((mwptr_t)(memory->pages[addr.page].page.byte + addr.offset), _to_write & 0xFFFF);
+    atomic_store((mwptr_t)(memory->pages[addr.page] + addr.offset), _to_write & 0xFFFF);
     return RET_SUCCESS;
 }
 
@@ -202,7 +168,7 @@ mret_t merry_dmemory_read_dword(MerryDMem *memory, maddress_t address, mqptr_t _
         memory->error = MERRY_MEM_INVALID_ACCESS;
         return RET_FAILURE;
     }
-    *_store_in = *((mdptr_t)(memory->pages[addr.page].page.byte + addr.offset));
+    *_store_in = *((mdptr_t)(memory->pages[addr.page] + addr.offset));
     return RET_SUCCESS;
 }
 
@@ -223,7 +189,7 @@ mret_t merry_dmemory_read_dword_atm(MerryDMem *memory, maddress_t address, mqptr
         memory->error = MERRY_MEM_INVALID_ACCESS;
         return RET_FAILURE;
     }
-    *_store_in = (mqword_t)atomic_load((mdptr_t)(memory->pages[addr.page].page.byte + addr.offset));
+    *_store_in = (mqword_t)atomic_load((mdptr_t)(memory->pages[addr.page] + addr.offset));
     return RET_SUCCESS;
 }
 
@@ -243,7 +209,7 @@ mret_t merry_dmemory_write_dword(MerryDMem *memory, maddress_t address, mqword_t
         memory->error = MERRY_MEM_INVALID_ACCESS;
         return RET_FAILURE;
     }
-    *((mdptr_t)(memory->pages[addr.page].page.byte + addr.offset)) = _to_write & 0xFFFFFFFF;
+    *((mdptr_t)(memory->pages[addr.page] + addr.offset)) = _to_write & 0xFFFFFFFF;
     return RET_SUCCESS;
 }
 
@@ -263,7 +229,7 @@ mret_t merry_dmemory_write_dword_atm(MerryDMem *memory, maddress_t address, mqwo
         memory->error = MERRY_MEM_INVALID_ACCESS;
         return RET_FAILURE;
     }
-    atomic_store((mdptr_t)(memory->pages[addr.page].page.byte + addr.offset), _to_write & 0xFFFFFFFF);
+    atomic_store((mdptr_t)(memory->pages[addr.page] + addr.offset), _to_write & 0xFFFFFFFF);
     return RET_SUCCESS;
 }
 
@@ -284,7 +250,7 @@ mret_t merry_dmemory_read_qword(MerryDMem *memory, maddress_t address, mqptr_t _
         memory->error = MERRY_MEM_INVALID_ACCESS;
         return RET_FAILURE;
     }
-    *_store_in = *((mqptr_t)(memory->pages[addr.page].page.byte + addr.offset));
+    *_store_in = *((mqptr_t)(memory->pages[addr.page] + addr.offset));
     return RET_SUCCESS;
 }
 
@@ -305,7 +271,7 @@ mret_t merry_dmemory_read_qword_atm(MerryDMem *memory, maddress_t address, mqptr
         memory->error = MERRY_MEM_INVALID_ACCESS;
         return RET_FAILURE;
     }
-    *_store_in = atomic_load((mqptr_t)(memory->pages[addr.page].page.byte + addr.offset));
+    *_store_in = atomic_load((mqptr_t)(memory->pages[addr.page] + addr.offset));
     return RET_SUCCESS;
 }
 
@@ -325,7 +291,7 @@ mret_t merry_dmemory_write_qword(MerryDMem *memory, maddress_t address, mqword_t
         memory->error = MERRY_MEM_INVALID_ACCESS;
         return RET_FAILURE;
     }
-    *((mqptr_t)(memory->pages[addr.page].page.byte + addr.offset)) = _to_write;
+    *((mqptr_t)(memory->pages[addr.page] + addr.offset)) = _to_write;
     return RET_SUCCESS;
 }
 
@@ -345,7 +311,7 @@ mret_t merry_dmemory_write_qword_atm(MerryDMem *memory, maddress_t address, mqwo
         memory->error = MERRY_MEM_INVALID_ACCESS;
         return RET_FAILURE;
     }
-    atomic_store((mqptr_t)(memory->pages[addr.page].page.byte + addr.offset), _to_write);
+    atomic_store((mqptr_t)(memory->pages[addr.page] + addr.offset), _to_write);
     return RET_SUCCESS;
 }
 
@@ -359,7 +325,7 @@ mbptr_t merry_dmemory_get_byte_address(MerryDMem *memory, maddress_t address)
         return RET_NULL;
     }
     // this just basically returns an actual address to the address that the manager can use
-    return &memory->pages[addr.page].page.byte[addr.offset];
+    return &memory->pages[addr.page][addr.offset];
 }
 
 mbptr_t merry_dmemory_get_byte_address_bounds(MerryDMem *memory, maddress_t address, msize_t bound)
@@ -377,7 +343,7 @@ mbptr_t merry_dmemory_get_byte_address_bounds(MerryDMem *memory, maddress_t addr
         return RET_NULL;
     }
     // this just basically returns an actual address to the address that the manager can use
-    return &memory->pages[addr.page].page.byte[addr.offset];
+    return &memory->pages[addr.page][addr.offset];
 }
 
 mwptr_t merry_dmemory_get_word_address(MerryDMem *memory, maddress_t address)
@@ -390,7 +356,7 @@ mwptr_t merry_dmemory_get_word_address(MerryDMem *memory, maddress_t address)
         return RET_NULL;
     }
     // this just basically returns an actual address to the address that the manager can use
-    return (mwptr_t)(memory->pages[addr.page].page.byte + addr.offset);
+    return (mwptr_t)(memory->pages[addr.page] + addr.offset);
 }
 
 // here bound is bound*2 bytes
@@ -410,7 +376,7 @@ mwptr_t merry_dmemory_get_word_address_bounds(MerryDMem *memory, maddress_t addr
         return RET_NULL;
     }
     // this just basically returns an actual address to the address that the manager can use
-    return (mwptr_t)(memory->pages[addr.page].page.byte + addr.offset);
+    return (mwptr_t)(memory->pages[addr.page] + addr.offset);
 }
 
 mdptr_t merry_dmemory_get_dword_address(MerryDMem *memory, maddress_t address)
@@ -423,7 +389,7 @@ mdptr_t merry_dmemory_get_dword_address(MerryDMem *memory, maddress_t address)
         return RET_NULL;
     }
     // this just basically returns an actual address to the address that the manager can use
-    return (mdptr_t)(memory->pages[addr.page].page.byte + addr.offset);
+    return (mdptr_t)(memory->pages[addr.page] + addr.offset);
 }
 
 // here bound is bound*4 bytes
@@ -443,7 +409,7 @@ mdptr_t merry_dmemory_get_dword_address_bounds(MerryDMem *memory, maddress_t add
         return RET_NULL;
     }
     // this just basically returns an actual address to the address that the manager can use
-    return (mdptr_t)(memory->pages[addr.page].page.byte + addr.offset);
+    return (mdptr_t)(memory->pages[addr.page] + addr.offset);
 }
 
 mqptr_t merry_dmemory_get_qword_address(MerryDMem *memory, maddress_t address)
@@ -456,7 +422,7 @@ mqptr_t merry_dmemory_get_qword_address(MerryDMem *memory, maddress_t address)
         return RET_NULL;
     }
     // this just basically returns an actual address to the address that the manager can use
-    return (mqptr_t)(memory->pages[addr.page].page.byte + addr.offset);
+    return (mqptr_t)(memory->pages[addr.page] + addr.offset);
 }
 
 // here bound is bound*8 bytes
@@ -476,7 +442,7 @@ mqptr_t merry_dmemory_get_qword_address_bounds(MerryDMem *memory, maddress_t add
         return RET_NULL;
     }
     // this just basically returns an actual address to the address that the manager can use
-    return (mqptr_t)(memory->pages[addr.page].page.byte + addr.offset);
+    return (mqptr_t)(memory->pages[addr.page] + addr.offset);
 }
 
 mstr_t merry_dmemory_get_bytes_maybe_over_multiple_pages(MerryDMem *memory, maddress_t address, msize_t length)
@@ -498,7 +464,7 @@ mstr_t merry_dmemory_get_bytes_maybe_over_multiple_pages(MerryDMem *memory, madd
     {
         // the entire array is in this page only
         // simply copy the memory
-        memcpy(array, memory->pages[addr.page].page.byte + addr.offset, length);
+        memcpy(array, memory->pages[addr.page] + addr.offset, length);
         return array; // we are entrusting the stdlib to not fail as this should not fail
     }
     else
@@ -506,7 +472,7 @@ mstr_t merry_dmemory_get_bytes_maybe_over_multiple_pages(MerryDMem *memory, madd
         // the array is in multiple pages
         // first copy whatever part is in this page
         curr += dist_from_end;
-        memcpy(array, memory->pages[addr.page].page.byte + addr.offset, dist_from_end);
+        memcpy(array, memory->pages[addr.page] + addr.offset, dist_from_end);
         length -= dist_from_end;
         // now until we copy everything, keep doing it
         register msize_t no_of_pages = length / _MERRY_MEMORY_ADDRESSES_PER_PAGE_;
@@ -520,13 +486,13 @@ mstr_t merry_dmemory_get_bytes_maybe_over_multiple_pages(MerryDMem *memory, madd
         addr.page++;
         for (msize_t i = 0; i < no_of_pages; i++, addr.page++)
         {
-            memcpy(curr, memory->pages[addr.page].page.byte, _MERRY_MEMORY_ADDRESSES_PER_PAGE_);
+            memcpy(curr, memory->pages[addr.page], _MERRY_MEMORY_ADDRESSES_PER_PAGE_);
             curr += _MERRY_MEMORY_ADDRESSES_PER_PAGE_;
         }
         if (remaining > 0)
         {
             // addr.page will be correctly pointed
-            memcpy(curr, memory->pages[addr.page].page.byte, remaining);
+            memcpy(curr, memory->pages[addr.page], remaining);
         }
     }
     return array;
@@ -547,13 +513,13 @@ mret_t merry_dmemory_write_bytes_maybe_over_multiple_pages(MerryDMem *memory, ma
     msize_t dist_from_end = _MERRY_MEMORY_ADDRESSES_PER_PAGE_ - addr.offset;
     if (dist_from_end > length)
     {
-        memcpy(memory->pages[addr.page].page.byte + addr.offset, array, length);
+        memcpy(memory->pages[addr.page] + addr.offset, array, length);
         return RET_SUCCESS; // we are entrusting the stdlib to not fail as this should not fail
     }
     else
     {
         curr += dist_from_end;
-        memcpy(memory->pages[addr.page].page.byte + addr.offset, array, dist_from_end);
+        memcpy(memory->pages[addr.page] + addr.offset, array, dist_from_end);
         length -= dist_from_end;
         // now until we copy everything, keep doing it
         register msize_t no_of_pages = length / _MERRY_MEMORY_ADDRESSES_PER_PAGE_;
@@ -566,13 +532,13 @@ mret_t merry_dmemory_write_bytes_maybe_over_multiple_pages(MerryDMem *memory, ma
         addr.page++;
         for (msize_t i = 0; i < no_of_pages; i++, addr.page++)
         {
-            memcpy(memory->pages[addr.page].page.byte, curr, _MERRY_MEMORY_ADDRESSES_PER_PAGE_);
+            memcpy(memory->pages[addr.page], curr, _MERRY_MEMORY_ADDRESSES_PER_PAGE_);
             curr += _MERRY_MEMORY_ADDRESSES_PER_PAGE_;
         }
         if (remaining > 0)
         {
             // addr.page will be correctly pointed
-            memcpy(memory->pages[addr.page].page.byte, curr, remaining);
+            memcpy(memory->pages[addr.page], curr, remaining);
         }
     }
     return RET_SUCCESS;

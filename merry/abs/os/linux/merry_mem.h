@@ -12,6 +12,7 @@
 #define _MERRY_RET_GIVE_ERROR_ -1        // the error sent by munmap on failure
 #define _MERRY_PROT_DEFAULT_ 0x00        // default protection flag
 #define _MERRY_FLAG_DEFAULT_ 0x00        // default flag
+#define _MERRY_MEM_GET_PAGE_SHARED_(size, prot) mmap(NULL, size, PROT_READ | PROT_WRITE | prot, MAP_ANONYMOUS | MAP_SHARED, -1, 0)
 
 // for extending system break point
 // some systems do not provide such functionality(Or Maybe I am just not knowledgeable)

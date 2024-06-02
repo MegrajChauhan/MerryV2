@@ -13,19 +13,16 @@ typedef struct MerryDMem MerryDMem;
 
 struct MerryDMem
 {
-    MerryMemPage *pages;
+    mbptr_t *pages;
     msize_t page_count;
     merrot_t error;
 };
 
-MerryDMem *merry_data_mem_init(msize_t page_count);
-
-void merry_destroy_data_mem(MerryDMem *mem);
+mret_t merry_data_mem_init(MerryDMem *dmem, msize_t page_count, mptr_t *ptr);
 
 mret_t merry_dmemory_add_new_page(MerryDMem *memory);
 
 // After receiving the pages, the dmem will manage it so freeing it is the job of dmem
-MerryDMem *merry_data_mem_init_provided(MerryMemPage *pages, msize_t count);
 
 mret_t merry_dmemory_read_byte(MerryDMem *memory, maddress_t address, mqptr_t _store_in);
 mret_t merry_dmemory_read_byte_atm(MerryDMem *memory, maddress_t address, mqptr_t _store_in);

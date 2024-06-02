@@ -9,10 +9,8 @@ typedef struct MerryTime MerryTime;
 
 struct MerryTime
 {
-    msize_t seconds;
-    msize_t nanoseconds;
-    msize_t microseconds;
-    msize_t milliseconds;
+    int seconds;
+    int microseconds;
 };
 
 #define _MERRY_SYS_TICKS_PER_SECONDS_ CLOCKS_PER_SEC
