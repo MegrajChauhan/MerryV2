@@ -1,127 +1,94 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <merry_stack.h>
-#include <merry_thread.h>
-#include <merry_console.h>
-#include <merry_dmem.h>
-#include <merry_imem.h>
-#include <merry_time.h>
+/*
+ * MIT License
+ *
+ * Copyright (c) 2024 MegrajChauhan
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+#include <merry.h>
+#include <merry_os.h>
 
-mret_t test_dmem()
+int main(int argc, char **argv)
 {
-    MerryDMem *dmem = merry_data_mem_init(2);
-    if (dmem == RET_NULL)
-        return RET_FAILURE;
-    if (merry_dmemory_write_byte(dmem, 900000, 123) == RET_FAILURE)
-        goto failed;
-    if (merry_dmemory_write_qword(dmem, 1700778, 0xABCDEF012345BABA) == RET_FAILURE)
-        goto failed;
-    mqword_t read;
-    if (merry_dmemory_read_byte(dmem, 900000, &read) == RET_FAILURE)
-        goto failed;
-    printf("Read byte: %llu\n", read);
-    if (merry_dmemory_read_word(dmem, 900000, &read) == RET_FAILURE)
-        goto failed;
-    printf("Read word: %llu\n", read);
-    if (merry_dmemory_read_word(dmem, 899999, &read) == RET_FAILURE)
-        goto failed;
-    printf("Read word: %lX\n", read);
-    if (merry_dmemory_read_qword(dmem, 1700778, &read) == RET_FAILURE)
-        goto failed;
-    printf("Read qword: %lX\n", read);
-    if (merry_dmemory_read_byte(dmem, 1700778, &read) == RET_FAILURE)
-        goto failed;
-    printf("Read byte: %lX\n", read);
-    if (merry_dmemory_read_dword(dmem, 1700778, &read) == RET_FAILURE)
-        goto failed;
-    printf("Read dword: %lX\n", read);
-    merry_destroy_data_mem(dmem);
-    return RET_SUCCESS;
-failed:
-    merry_destroy_data_mem(dmem);
-    return RET_FAILURE;
-}
+    MerryCLP *_parsed_options = merry_parse_options(argc, argv);
+    // char *x[] = {"./merry", "-f", "output.bin",};
 
-mret_t test_imem()
-{
-    MerryIMem *imem = merry_inst_mem_init(2);
-    if (imem == RET_NULL)
-        return RET_FAILURE;
-    if (merry_imemory_add_new_page(imem) == RET_FAILURE)
-        goto failed;
-    if (merry_imem_write_inst(imem, 1000, 0xABCDEF012345BABA) == RET_FAILURE)
-        goto failed;
-    mqword_t read;
-    if (merry_imem_read_inst(imem, 0, &read) == RET_FAILURE)
-        goto failed;
-    printf("Read inst: %lX\n", read);
-    if (merry_imem_read_inst(imem, 1000, &read) == RET_FAILURE)
-        goto failed;
-    printf("Read inst: %lX\n", read);
-    merry_destroy_inst_mem(imem);
-    return RET_SUCCESS;
-failed:
-    merry_destroy_inst_mem(imem);
-    return RET_FAILURE;
-}
+    // MerryCLP *_parsed_options = merry_parse_options(3, x);
 
-mret_t test_stack()
-{
-    const msize_t len = 100;
-    MerryStack *st = merry_init_stack(len, mtrue, 0, 10);
-    if (st == NULL)
-        return RET_FAILURE;
-    for (int i = 0; i < len; ++i)
+    if (_parsed_options == RET_NULL)
     {
-        if (merry_stack_push(st, i) == RET_FAILURE)
-        {
-            merry_destroy_stack(st);
-            return RET_FAILURE;
-        }
+        merry_print_help();
+        return -1;
     }
-    for (int i = 0; i < len; ++i)
+    // if help is to be printed, ignore every other options
+    if (_parsed_options->options[_OPT_HELP].provided == mtrue)
     {
-        mqword_t val;
-        if (merry_stack_pop(st, &val) == RET_FAILURE)
-        {
-            merry_destroy_stack(st);
-            return RET_FAILURE;
-        }
-        if (val != len - i - 1)
-        {
-            merry_destroy_stack(st);
-            return RET_FAILURE;
-        }
-        log("Popped %d\n", val);
+        merry_print_help();
+        merry_destroy_parser(_parsed_options);
+        return 0;
     }
-    merry_destroy_stack(st);
-    return RET_SUCCESS;
-}
+    // if version is to be printed, do the same as help
+    if (_parsed_options->options[_OPT_VER].provided == mtrue)
+    {
+        // fprintf(stdout, "Merry Virtual Machine: A 64-bit virtual machine\nLatest version-%s %s\n", _MERRY_VERSION_, _MERRY_VERSION_STATE_);
+        // merry_destroy_parser(_parsed_options);
+        // return 0;
+    }
+    // see if input file was provided or not
+    if (_parsed_options->options[_OPT_FILE].provided == mfalse)
+    {
+        fprintf(stderr, "Error: Expected path to input file, provided none\n");
+        merry_print_help();
+        merry_destroy_parser(_parsed_options);
+        return -1;
+    }
+    // Now since we don't have any fancy or complex options to handle, let's get straight to business
 
-int main()
-{
-    MerryTime t;
-    merry_get_time(&t);
-    if (test_stack() != RET_SUCCESS)
+    if (merry_os_init(*_parsed_options->options[_OPT_FILE]._given_value_str_, (_parsed_options->options[_OPT_CLO].provided == mtrue) ? _parsed_options->_options_ : NULL, _parsed_options->option_count) == RET_FAILURE)
     {
-        printf("Stack Test Failed\n");
-        return 1;
+        // the valid error messages will be automatically printed
+        merry_destroy_parser(_parsed_options);
+        return -1;
     }
-    printf("Stack Test Passed\n");
-    if (test_dmem() != RET_SUCCESS)
+    // if (merry_os_init("build/isEven.mbin") == RET_FAILURE)
+    // {
+    //     return -1;
+    // }
+    merry_destroy_parser(_parsed_options);
+    MerryThread *osthread = merry_thread_init();
+    if (osthread == NULL)
     {
-        printf("Data memory test Failed\n");
-        return 1;
+        fprintf(stderr, "Failed to intialize VM.\n");
+        goto failure;
     }
-    printf("Data Memory Test Passed\n");
-    if (test_imem() != RET_SUCCESS)
+    if (merry_create_thread(osthread, &merry_os_start_vm, NULL) == RET_FAILURE)
     {
-        printf("Instruction memory test Failed\n");
-        return 1;
+        fprintf(stderr, "Failed to start VM.\n");
+        merry_thread_destroy(osthread);
+        goto failure;
     }
-    printf("Instruction Memory Test Passed\n");
-    merry_sleep(1);
-    t = merry_get_time_difference_from(&t);
-    printf("Time taken: %d and %d\n", t.seconds, t.microseconds);
-    return 0;
+    msize_t returnval = 0;
+    merry_thread_join(osthread, &returnval); // I am an idiot
+    merry_thread_destroy(osthread);
+    merry_os_destroy();
+    return returnval;
+failure:
+    merry_os_destroy();
+    return -1;
 }

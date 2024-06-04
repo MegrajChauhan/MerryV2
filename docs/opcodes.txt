@@ -1,0 +1,383 @@
+NOTE: The register indexing can be done by just 4 bits as there are only 16 registers available to the program.
+NOTE: Most instructions have variants. For eg: add_imm and add_reg which can be generalized into add. 
+
+1st byte | second byte | ...
+  00           00        00 00 00 00 00 00
+
+registers      index or how they are encoded into instructions
+   Ma                        0x00
+   Mb                        0x01
+   Mc                        0x02
+   Md                        0x03
+   Me                        0x04
+   Mf                        0x05
+   M1                        0x06
+   M2                        0x07
+   M3                        0x08
+   M4                        0x09
+   M5                        0x0A
+   Mm1                       0x0B
+   Mm2                       0x0C
+   Mm3                       0x0D
+   Mm4                       0x0E
+   Mm5                       0x0F
+
+FLAGS REGISTER:
+The contents of the flag register depends on the architecture. But the general contents of it are: carry flag, zero flag, overflow flag, negative flag and greater flag.
+Compare instructions and arithmetic instructions can affect the state of these flags.
+
+nop -> opcode = 0x00
+       every value of the other 7 byte is ignored.
+       Does nothing
+
+halt -> opcode = 0x01
+        stops the core and if the core is the only one running, the VM stops
+
+add_imm  -> opcode: 0x02
+            operands: One register and one immediate
+            register: The lower four bits of the second byte.
+            immediate: 4 bytes immediate in the lower 4 bytes[Can be expanded into 6 bytes immediate at most]
+            example: 0x02 0x00 0x00 0x00 0xAA 0xBB 0xCC 0xDD -> add 0xAABBCCDD to whatever is in the Ma[as indicated by the lower 4 bits of the second byte].             
+
+[Changes made here: Things should be easier with this]
+add_reg  -> opcode: 0x03
+            operands: two registers
+            register 1: The upper four bits of the last byte.
+            register 2: The lower four bits of the last byte.
+            example: 0x03 0x00 0x00 0x00 0x00 0x00 0x00 0x01 -> add the contents of Mb register to Ma register[because the last byte is 0x01-> 0b00000001]
+
+sub_imm -> opcode: 0x04: everything else is the same as add_imm
+sub_reg -> opcode: 0x05: everything else is the same as add_reg
+mul_imm -> opcode: 0x06: everything else is the same as add_imm
+mul_reg -> opcode: 0x07: everything else is the same as add_reg
+div_imm -> opcode: 0x08: everything else is the same as add_imm
+div_reg -> opcode: 0x09: everything else is the same as add_reg
+mod_imm -> opcode: 0x0A: everything else is the same as add_imm
+mod_reg -> opcode: 0x0B: everything else is the same as add_reg
+iadd_imm -> opcode: 0x0C -> everything else is the same as add_imm          
+iadd_reg -> opcode: 0x0D -> everything else is the same as add_reg
+isub_imm -> opcode: 0x0E -> everything else is the same as add_imm
+isub_reg -> opcode: 0x0F -> everything else is the same as add_reg
+imul_imm -> opcode: 0x10 -> everything else is the same as add_imm
+imul_reg -> opcode: 0x11 -> everything else is the same as add_reg
+idiv_imm -> opcode: 0x12 -> everything else is the same as add_imm
+idiv_reg -> opcode: 0x13 -> everything else is the same as add_reg
+imod_imm -> opcode: 0x14 -> everything else is the same as add_imm
+imod_reg -> opcode: 0x15 -> everything else is the same as add_reg
+
+[It is not guranteed that floating point instructions will work correctly across different host]
+fadd -> opcode: 0x16 -> only takes 2 registers encoded exactly as add_reg. 
+fsub -> opcode: 0x17 -> only takes 2 registers encoded exactly as add_reg. 
+fmul -> opcode: 0x18 -> only takes 2 registers encoded exactly as add_reg. 
+fdiv -> opcode: 0x19 -> only takes 2 registers encoded exactly as add_reg. 
+
+move_imm -> opcode: 0x1A
+            operands: One register and one immediate
+            register: same as add_imm
+            immediate: same as add_imm
+
+move_imm_64 -> opcode: 0x1B
+               operands: one register and a 64 bits value that follows the instruction in the memory.
+               example: 0x1B 0x00 0x00 0x00 0x00 0x00 0x00 0x00 -> Move 64 bits immediate into Ma[as represented by the lower 4 bits of the 8th byte]
+                        immediately after this instruction, the 64-bit value must follow i.e say 0xAA 0xBB 0xCC 0xDD 0xEE 0xFF 0x00 0x01
+                        These 8 bytes will be moved into Ma.
+
+move_reg -> opcode: 0x1C
+            operands: two registers
+            details: moves the entire 8 bytes from one register to another.
+            example: 0x1C 0x00 0x00 0x00 0x00 0x00 0x00 0x01 -> Here in the last byte 0x01, which is 0b0000_0001. So, from Mb(0001) register, source, 8 bytes are moved into Ma(0000), destination.
+
+move_reg8 -> opcode: 0x1D: same as move_reg except the lower 1 byte of the source is moved into the destination register[Upper bytes of the destination register is cleared].
+move_reg16 -> opcode: 0x1E: same as move_reg except the lower 2 bytes of the source are moved into the destination register[Upper bytes of the destination register is cleared].
+move_reg32 -> opcode: 0x1F: same as move_reg except the lower 4 bytes of the source are moved into the destination register[Upper bytes of the destination register is cleared].
+
+[Changes made here]
+movesx_imm8 -> opcode: 0x20
+               operands: destination register and a 8 bit value.
+               example: 0x20 0x05 0x00 0x00 0x00 0x00 0x00 0x1D -> sign extend 0x1D to 8 bytes and store it in Mf register.
+
+movesx_imm16 -> opcode: 0x21 : same as  movesx_imm8 but with 2 bytes immediate value.
+movesx_imm32 -> opcode: 0x22 : same as  movesx_imm8 but with 4 bytes immediate value.
+
+movesx_reg8 -> opcode: 0x23
+               operands: 2 registers
+               example: 0x23 0x00 0x00 0x00 0x00 0x00 0x00 0x01 -> Here the last byte, 0x01 which is 0b0000_0001. This implies the source is the Mb register and destination is Ma register.
+               This instruction moves the lower 1 byte from the destination register while sign extending it[Clears the upper bytes of the destination register].
+
+movesx_reg16: opcode: 0x24 : same as movesx_reg8 but moves 2 bytes instead.
+movesx_reg32: opcode: 0x25 : same as movesx_reg8 but moves 4 bytes instead.
+
+NOTE: movezx is unnecessary but the general move instruction can be aliased with movezx.
+
+jmp_off -> opcode: 0x26
+           operands: a 6 byte immediate
+           details: This jmp variants requires a 6 byte immediate which is treated as a signed number i.e the 0th bit is the sign bit.
+                    The immediate is sign extended as per the sign and then added to the pc.
+           example: 0x26 0x00 0x01 0x02 0x03 0x04 0x05 0x06 -> The last 6 bytes are the offset. Since it is a signed value, providing 2's complemented negative value will decrement the PC.
+
+jmp_addr -> opcode: 0x27
+            operands: 6 bytes address
+            example: 0x27 0x00 [6 bytes address]
+
+call -> opcode: 0x28
+        operands: 6 bytes address 
+        example: 0x28 0x00 [6 bytes address]
+
+ret -> opcode: 0x29
+       no operands
+
+sva -> opcode: 0x2A
+       operands: The destination register and the offset
+       details: The SVA(Stack Variable Access) instruction is used to access variables from the stack. The given offset is used to get the required value from the stack by subtracting it from BP.
+                The value is then written to the destination register. The offset is 2 bytes long at most and it is treated as unsigned.
+       example: 0x2A 0x03 0x00 0x00 0x00 0x00 0x00 0x07 -> Subtract "0x00 0x07" from BP and put it into register 0x03[Mc].
+
+svc -> opcode: 0x2B
+       operands: The same as sva at the exact same byte position.
+       details: SVC(Stack Variable Change) is used to change the value of a variable on the stack. Works in the same way as sva except the value in the register is written to that offset in stack.
+
+push_imm -> opcode: 0x2C
+            operands: a 6 bytes immediate.
+            example: 0x2C 0x00 [6 bytes of immediate] -> The 6 bytes of immediate is pushed onto the stack.
+
+push_reg -> opcode: 0x2D
+            operands: The source register
+            example: 0x2D 0x00 0x00 0x00 0x00 0x00 0x00 0x01 -> Pushes whatever is in the the register Mb onto the stack[0x01 is 0b0000_0001 and the lower 4 bits are used].
+
+pop -> opcode: 0x2E
+       operands: the destination register
+       example: 0x2E 0x00 0x00 0x00 0x00 0x00 0x00 0x05 -> Pop the top of the stack into the register 0x05 which is the Mf register.
+
+pusha -> opcode: 0x2F
+         details: Pushes all the 16 registers onto the stack.
+
+popa -> opcode: 0x30
+        details: pops 16 values from the stack in the reverse order of pusha into all 16 registers
+
+and_imm -> opcode: 0x31
+           operands: the source register which is also the destination register and a 64-bit value that follows the instruction in the memory.
+           example: 0x31 0x00 0x00 0x00 0x00 0x00 0x00 0x01
+                    0x00 0xFf 0xAA 0x10 0x11 0xEE 0x00 0x04 -> Performs AND operation on the value in register 0x01[Mb] and the following value.
+
+and_reg -> opcode: 0x32
+          operands: two registers
+          example: 0x32 0x00 0x00 0x00 0x00 0x00 0x00 0b0011_0101 -> Performs AND operation on the values in register 0011(Md) and register 0101(Mf) and stores the result in Md
+
+or_imm -> opcode: 0x33 : same as and_imm but performs OR operation instead.
+or_reg -> opcode: 0x34 : same as and_reg but performs OR operation instead.
+xor_imm -> opcode: 0x35 : same as and_imm but performs XOR operation instead.
+xor_reg -> opcode: 0x36 : same as and_reg but performs XOR operation instead.
+
+not -> opcode: 0x37: Performs NOT operation on the source register and stores it in that register. Only one operand which is the source register. The lowest 4 bits of the 8th byte is taken as the
+                     source register.
+
+lshift -> opcode: 0x38
+          example: 0x38 0x00 0x00 0x00 0x00 0x00 0x01 0x0F -> Takes the value from register 0x01[Mb] and shifts it by 0x0F position. It is recommended that this value is never greater than 64.
+                   The result is stored in the source register.
+
+rshift -> opcode: 0x39: same as rshift but performs right shift instead.
+
+cmp_imm -> opcode: 0x3A
+           operands: One source register and one 64-bit value that follows the instruction in memory.
+           example: 0x3A 0x00 0x00 0x00 0x00 0x00 0x00 0x07
+                    <An 8 byte value that follows> -> Performs comparison between the value in the register and the immediate and sets the flags appropriately.
+
+cmp_reg -> opcode: 0x3B
+           example: 0x3B 0x00 0x00 0x00 0x00 0x00 0x00 0x01 -> compares the values in register 0000(Ma) and 0001(Mb)[0x01 -> 0b0000_0001]
+
+inc -> opcode: 0x3C
+       details: Increments the value in a register by 1 without affecting the flags. The source register is encoded in the lower 4 bits of the 8th byte.
+
+dec -> opcode: 0x3D: same as inc but decrements the value instead.
+
+lea -> opcode: 0x3E
+       operands: 4 registers. one register that contains the base address, one for the index, 1 for scale and 1 for destination
+       example: 0x3E 0x00 0x00 0x00 0x01 0x02 0x03 0x04 -> performs this operation: 0x01[Ab] = 0x02[Mc] + 0x03[Md] * 0x04[Me]. This is pretty useful for arrays. 
+
+load -> opcode: 0x3F
+        operands: The destination register and 6 byte address.
+        example: 0x3F 0x05 0x00 0x00 0x00 0x00 0x12 0x34
+                 [8 byte address of the data] -> loads the value from the given address[0x000000001234] into register 0x05[Mf]
+                 Note: It is to be noted that addresses shouldn't be that big(at most 20 bits) and within the bounds as well.
+
+store -> opcode: 0x40: same as load except the value is now stored into memory rather than loaded.
+
+[
+  A few aliases that I would like to set:
+  When I am Nibble Encoding, I am referring to the encoding of two registers in 1 byte i.e say 0x01 which would be 0b0000_0001 is encoding 2 registers; 0000 and 0001 namely Ma and Mb.
+  So if I say 8th byte Nibble Encoding then I am saying that the 8th byte of the instruction encodes two registers as mentioned above.
+]
+
+excg8 -> opcode: 0x41
+         operands: 8th byte Nibble Encoding
+         details: Exchanges the lowest byte(8th byte) of both the registers without overwriting the upper bytes.
+
+excg16 -> opcode: 0x42: same as excg8 but exchanges two lower bytes.
+excg32 -> opcode: 0x43: same as excg8 but exchanges four lower bytes.
+excg -> opcode: 0x44: same as excg8 but exchanges all bytes.
+
+mov8 -> opcode: 0x45: same as excg8 but instead of exchanging, it moves the lower byte from the second register to the first.
+mov16 -> opcode: 0x46: same as excg16 but instead of exchanging, it moves the lower 2 bytes from the second register to the first.
+mov32 -> opcode: 0x47: same as excg32 but instead of exchanging, it moves the lower 4 bytes from the second register to the first.
+
+cflags -> opcode: 0x48: Simply clears the flags register.
+reset -> opcode: 0x49: Resets the value of all registers to 0
+clz -> opcode: 0x4A: Resets the zero flag from the flags register  
+cln -> opcode: 0x4B: Resets the negative flag from the flags register 
+clc -> opcode: 0x4C: Resets the carry flag from the flags register 
+clo -> opcode: 0x4D: Resets the overflow flag from the flags register 
+
+jnz -> opcode: 0x4E
+       operands: A 6 bytes address.
+       details: Jump if the zero flag is not set
+       example: 0x4E 0x00 [6 bytes address]
+jz -> opcode: 0x4F: same as jnz
+jne -> opcode: 0x50: same as jnz
+je -> opcode: 0x51: same as jnz
+jnc -> opcode: 0x52: same as jnz
+jc -> opcode: 0x53: same as jnz
+jno -> opcode: 0x54: same as jnz
+jo -> opcode: 0x55: same as jnz
+jnn -> opcode: 0x56: same as jnz
+jn -> opcode: 0x57: same as jnz
+jng -> opcode: 0x58: same as jnz
+jg -> opcode: 0x59: same as jnz
+jns -> opcode: 0x5A: same as jnz
+js -> opcode: 0x5B: same as jnz
+jge -> opcode: 0x5C: same as jnz
+jse -> opcode: 0x5D: same as jnz
+
+loop -> opcode: 0x5E
+        operands: takes a 6 byte address just like jmp.
+        details: continuously jumps to the given address untill the Mc register is 0
+        example: Say Mc = 20, This instruction: 0x5C 0x00 [6 bytes address], untill Mc becomes 0, the program will keep jumping to the address effectively looping 20 times.
+intr -> opcode: 0x5F
+        operand: The interrupt number. The lower 2 bytes represent the interrupt number.
+
+loadb -> opcode: 0x60
+         operands: register and a 6 byte address
+         example: 0x60 0x01 0x00 0xAA 0xBB 0xCC 0xDD 0xEE [load the byte at address 0xAABBCCDDEE into register 0x01(Mb)]
+
+loadw -> opcode: 0x61: same as loadb but loads 2 bytes instead
+loadd -> opcode: 0x62: same as loadb but loads 4 bytes instead
+
+storeb -> opcode: 0x63
+          operands: register and a 6 bytes address
+          encoding: The instruction is exactly the same as loadb except it stores a byte rather than loading.
+
+storew -> opcode: 0x64: same as storeb except stores 2 bytes
+stored -> opcode: 0x65: same as storeb except stores 4 bytes
+
+load_reg -> opcode: 0x66
+            operands: 2 registers encoded in the same way as add_reg
+            example: 0x66 0x00 0x00 0x00 0x00 0x00 0x00 0x12 [load 8 byte from the address provided in Mc into Mb(0x12 i.e 0x01 and 0x02)]
+store_reg -> opcode: 0x67: exactly the same as load_reg except in the example "0x66 0x00 0x00 0x00 0x00 0x00 0x00 0x12" the value of Mb will be stored into the address specified in Mc
+loadb_reg -> opcode: 0x68: same as load_reg but loads just 1 byte is loaded.
+storeb_reg -> opcode: 0x69: same as load_reg but loads just 1 byte is stored.
+loadw_reg -> opcode: 0x6A: same as load_reg but loads just 2 byte is loaded.
+storew_reg -> opcode: 0x6B: same as load_reg but loads just 2 byte is stored.
+loadd_reg -> opcode: 0x6C: same as load_reg but loads just 4 byte is loaded.
+stored_reg -> opcode: 0x6D: same as load_reg but loads just 4 byte is stored.
+
+cmpxchg -> opcode: 0x6E
+           operands: a 6 bytes address and 2 registers
+           example: 0x6E 0x12 0x00 0xAA 0xBB 0xCC 0xDD 0xEE
+           details: In the above example, the operands are two registers Mb and Mc(because second byte = 0x12) and an address 0xAABBCCDDEE.
+                    Whatever is in the given address is compared with whatever is in the Mb register. If they are equal, the value at the address
+                    is replaced by the value in Mc register. If the values are not equal, whatever is in the register Mb is replaced by whatever is in
+                    the given address. This is an atomic operation.
+
+cin -> opcode: 0x6F
+       operands: takes just one register
+       example: 0x6F 0x00 0x00 0x00 0x00 0x00 0x01
+       details: Reads one character from console and stores it into the register.
+cout -> opcode: 0x70: same as cin except whatever is in the given register is printed as character.
+sin -> opcode: 0x71
+       operands: The number of characters to read in the Mc register and a 6 bytes address.
+       details: The address is encoded into the last 6 bytes of the instruction. The specified number of characters
+       are read and stored in the address.
+sout -> opcode: 0x72: same as sin but the bytes are printed as characters.
+
+in -> opcode: 0x73: same as cin but reads a signed 1 byte number instead.
+out -> opcode: 0x74: same as cout but prints a signed 1 byte number instead.
+inw -> opcode: 0x75: same as cin but reads a signed 2 bytes number instead.
+outw -> opcode: 0x76: same as cout but prints a signed 2 bytes number instead.
+ind -> opcode: 0x77: same as cin but reads a signed 4 bytes number instead.
+outd -> opcode: 0x78: same as cout but prints a signed 4 bytes number instead.
+inq -> opcode: 0x79: same as cin but reads a signed 8 bytes number instead.
+outq -> opcode: 0x7A: same as cout but prints a signed 8 bytes number instead.
+
+uin -> opcode: 0x7B: same as cin but reads a unsigned 1 byte number instead.
+uout -> opcode: 0x7C: same as cout but prints a unsigned 1 byte number instead.
+uinw -> opcode: 0x7D: same as cin but reads a unsigned 2 bytes number instead.
+uoutw -> opcode: 0x7E: same as cout but prints a unsigned 2 bytes number instead.
+uind -> opcode: 0x7F: same as cin but reads a unsigned 4 bytes number instead.
+uoutd -> opcode: 0x80: same as cout but prints a unsigned 4 bytes number instead.
+uinq -> opcode: 0x81: same as cin but reads a unsigned 8 bytes number instead.
+uoutq -> opcode: 0x82: same as cout but prints a unsigned 8 bytes number instead.
+
+inf -> opcode: 0x83: same as cin but reads a 64-bit floating point number.
+outf -> opcode: 0x84: same as cout but outputs a 64-bit floating point number.
+inf32 -> opcode: 0x85: same as cin but reads a 32-bit floating point number.
+outf32 -> opcode: 0x86: same as cout but outputs a 32-bit floating point number.
+
+outr -> opcode: 0x87: displays the content of every register as a signed number
+uoutr -> opcode: 0x88: displays the content of every register as an unsigned number.
+
+[It is not guranteed that floating point instructions will work correctly across different host]
+fadd32 -> opcode: 0x89 -> only takes 2 registers encoded exactly as add_reg. 
+fsub32 -> opcode: 0x8A -> only takes 2 registers encoded exactly as add_reg. 
+fmul32 -> opcode: 0x8B -> only takes 2 registers encoded exactly as add_reg. 
+fdiv32 -> opcode: 0x8C -> only takes 2 registers encoded exactly as add_reg. 
+
+atm load -> opcode: 0x8D -> same as load but done atomically
+atm loadb -> opcode: 0x8E -> same as loadb but done atomically
+atm loadw -> opcode: 0x8F -> same as loadw but done atomically
+atm loadd -> opcode: 0x90 -> same as loadd but done atomically
+atm store -> opcode: 0x91 -> same as store but done atomically
+atm storeb -> opcode: 0x92 -> same as storeb but done atomically
+atm storew -> opcode: 0x93 -> same as storew but done atomically
+atm stored -> opcode: 0x94 -> same as stored but done atomically
+
+add_memb -> opcode: 0x95 -> same as add_imm but the immediate part now stores memory address
+add_memw -> opcode: 0x96 -> same as add_imm but the immediate part now stores memory address
+add_memd -> opcode: 0x97 -> same as add_imm but the immediate part now stores memory address
+add_memq -> opcode: 0x98 -> same as add_imm but the immediate part now stores memory address
+
+sub_memb -> opcode: 0x99 -> same as sub_imm but the immediate part now stores memory address
+sub_memw -> opcode: 0x9A -> same as sub_imm but the immediate part now stores memory address
+sub_memd -> opcode: 0x9B -> same as sub_imm but the immediate part now stores memory address
+sub_memq -> opcode: 0x9C -> same as sub_imm but the immediate part now stores memory address
+
+mul_memb -> opcode: 0x9D -> same as mul_imm but the immediate part now stores memory address
+mul_memw -> opcode: 0x9E -> same as mul_imm but the immediate part now stores memory address
+mul_memd -> opcode: 0x9F -> same as mul_imm but the immediate part now stores memory address
+mul_memq -> opcode: 0xA0 -> same as mul_imm but the immediate part now stores memory address
+
+div_memb -> opcode: 0xA1 -> same as div_imm but the immediate part now stores memory address
+div_memw -> opcode: 0xA2 -> same as div_imm but the immediate part now stores memory address
+div_memd -> opcode: 0xA3 -> same as div_imm but the immediate part now stores memory address
+div_memq -> opcode: 0xA4 -> same as div_imm but the immediate part now stores memory address
+
+mod_memb -> opcode: 0xA5 -> same as mod_imm but the immediate part now stores memory address
+mod_memw -> opcode: 0xA6 -> same as mod_imm but the immediate part now stores memory address
+mod_memd -> opcode: 0xA7 -> same as mod_imm but the immediate part now stores memory address
+mod_memq -> opcode: 0xA8 -> same as mod_imm but the immediate part now stores memory address
+
+fadd_mem -> opcode: 0xA9 -> the lower 4 bits of the second byte contains the register and the lower 6 bytes contain the address to the float 
+fsub_mem -> opcode: 0xAA -> the lower 4 bits of the second byte contains the register and the lower 6 bytes contain the address to the float 
+fmul_mem -> opcode: 0xAB -> the lower 4 bits of the second byte contains the register and the lower 6 bytes contain the address to the float 
+fdiv_mem -> opcode: 0xAC -> the lower 4 bits of the second byte contains the register and the lower 6 bytes contain the address to the float 
+
+fadd32_mem -> opcode: 0xAD -> the lower 4 bits of the second byte contains the register and the lower 6 bytes contain the address to the float 
+fsub32_mem -> opcode: 0xAE -> the lower 4 bits of the second byte contains the register and the lower 6 bytes contain the address to the float 
+fmul32_mem -> opcode: 0xAF -> the lower 4 bits of the second byte contains the register and the lower 6 bytes contain the address to the float 
+fdiv32_mem -> opcode: 0xB0 -> the lower 4 bits of the second byte contains the register and the lower 6 bytes contain the address to the float 
+
+cmp_memb -> opcode: 0xB1 -> the lower 4 bits of the second byte contains the register and the lower 6 bytes contain the address to the immediate
+cmp_memw -> opcode: 0xB2 -> the lower 4 bits of the second byte contains the register and the lower 6 bytes contain the address to the immediate
+cmp_memd -> opcode: 0xB3 -> the lower 4 bits of the second byte contains the register and the lower 6 bytes contain the address to the immediate
+cmp_memq -> opcode: 0xB4 -> the lower 4 bits of the second byte contains the register and the lower 6 bytes contain the address to the immediate
+
+set_excp -> opcode: 0xB5 -> The lower 6 bytes should hold the address to a procedure that will be set as the "Exception proc"
+call_excp -> opcode: 0xB6 -> Takes no arguments and when executed jumps to the procedure set by set_excp

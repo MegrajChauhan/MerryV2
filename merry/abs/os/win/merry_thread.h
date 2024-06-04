@@ -31,8 +31,7 @@ struct MerryThread
     HANDLE thread;
 };
 
-_MERRY_DEFINE_FUNC_PTR_(_THRET_T_, ThreadExecFunc, void *)
-
+_MERRY_DEFINE_FUNC_PTR_(_THRET_T_, ThreadExecFunc, void *);
 
 // initialize mutex lock
 MerryMutex *merry_mutex_init();

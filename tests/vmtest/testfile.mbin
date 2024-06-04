@@ -1,0 +1,11 @@
+[
+  .fmt_hex
+  .dlen 4
+  .ilen 8
+  .ibstart 0
+  .ibend 7
+  .dbstart 8
+  .dbend 12
+]
+abcdef01 2345 6789 12
+3456 00 10

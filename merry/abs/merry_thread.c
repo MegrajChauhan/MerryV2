@@ -1,4 +1,4 @@
-#include <merry_thread.h>
+#include "merry_thread.h"
 
 MerryMutex *merry_mutex_init()
 {
