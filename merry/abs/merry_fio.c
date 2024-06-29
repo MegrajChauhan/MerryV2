@@ -26,11 +26,11 @@ mret_t merry_open_new_file(mstr_t filepath, msize_t mode, mqptr_t _fd)
     default:
         return RET_FAILURE;
     }
-#else
-    // for windows or other systems
-#endif
     if (tmp == -1)
         return RET_FAILURE;
+#elif defined(_USE_WIN_)
+ 
+#endif
     *_fd = tmp;
     return RET_SUCCESS;
 }
@@ -48,8 +48,7 @@ msize_t merry_read_from_file(mqptr_t _fd, mbptr_t _store_in, msize_t number_of_b
 {
 #ifdef _USE_LINUX_
     return read(*_fd, _store_in, number_of_bytes);
-#else
-    // for other systems
+#elif defined(_USE_WIN_)
 #endif
     return RET_FAILURE;
 }

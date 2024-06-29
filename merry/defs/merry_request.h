@@ -67,6 +67,7 @@ enum
     _REQ_REWIND,        // go to the beginning of the file
     _REQ_MEM,           // request for more memory
                         // other functions like fseek, ftell, rewind can be implemented using the above as the base in software
+    _REQ_NEWPROCESS,    // create a new process
 };
 
 #endif

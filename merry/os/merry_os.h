@@ -38,6 +38,7 @@
 #include <merry_request_hdlr.h>
 #include <merry_core.h>
 #include <merry_console.h>
+#include <merry_process.h>
 #include <stdatomic.h>
 
 typedef struct Merry Merry;
@@ -95,6 +96,8 @@ void merry_os_handle_error(merrot_t error);
 
 void merry_os_handle_internal_module_error(merrot_t error_num);
 
+void merry_os_new_proc_init();
+
 #define _os_exec_(reqname) mret_t merry_os_execute_request_##reqname(Merry *os, MerryOSRequest *request)
 
 // r, r+, w, w+, a, a+
@@ -121,5 +124,6 @@ _os_exec_(fseek);
 _os_exec_(ftell);
 _os_exec_(rewind);
 _os_exec_(mem);
+_os_exec_(newprocess);
 
 #endif

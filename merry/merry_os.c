@@ -551,3 +551,55 @@ _os_exec_(mem)
     os->cores[request->id]->registers[Mb] = (os->data_mem->number_of_pages - 1) * _MERRY_MEMORY_ADDRESSES_PER_PAGE_ + 1;
     return RET_SUCCESS;
 }
+
+_os_exec_(newprocess)
+{
+// This will start a new process
+#ifdef _USE_LINUX_
+    MerryProcess p = merry_create_process();
+    if (p.pid == -1)
+    {
+        os->cores[request->id]->registers[Ma] = 1;
+        return RET_FAILURE;
+    }
+    if (p.pid == 0)
+    {
+        // We are in the child process
+        merry_os_new_proc_init();
+    }
+    else
+    {
+        os->cores[request->id]->registers[Ma] = 1;
+        return RET_FAILURE;
+    }
+#endif
+    return RET_SUCCESS;
+}
+
+void merry_os_new_proc_init()
+{
+    // Here, we reinitialize everything from scratch.
+    // In case of Linux, the OS thread is replicated in the new process
+    // We need to free everything accept the OS and the reader and then redo the initialization
+    // I do believe that mutexes and condition variables are different for different processes unless provided with attributes
+    if (surelyT(os.cores != NULL))
+    {
+        // We will leave the first core
+        for (msize_t i = 1; i < os.core_count; i++)
+        {
+            merry_core_destroy(os.cores[i]);
+        }
+        free(os.cores);
+    }
+    if (surelyT(os.core_threads != NULL))
+    {
+        for (msize_t i = 1; i < os.core_count; i++)
+        {
+            merry_thread_destroy(os.core_threads[i]);
+        }
+        free(os.core_threads);
+    }
+    // The file handles will be shared
+    merry_requestHdlr_kill_requests(); // make sure there are no requests for this OS
+
+}
